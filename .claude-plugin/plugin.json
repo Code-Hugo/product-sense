@@ -1,0 +1,21 @@
+{
+  "name": "product-sense",
+  "version": "0.1.0",
+  "description": "Develops product sense through structured analysis of Lenny's Podcast transcripts.",
+  "author": {
+    "name": "Hugo Hodinka",
+    "url": "https://github.com/Code-Hugo"
+  },
+  "homepage": "https://github.com/Code-Hugo/product-sense",
+  "repository": "https://github.com/Code-Hugo/product-sense",
+  "license": "MIT",
+  "keywords": [
+    "product-management",
+    "product-sense",
+    "lennys-podcast",
+    "ai",
+    "frameworks"
+  ],
+  "skills": ["./"],
+  "hooks": {}
+}
