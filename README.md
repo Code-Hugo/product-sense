@@ -2,7 +2,7 @@
 
 A Claude Code skill that acts as a product sense coach. Describe a real product challenge, answer a few short questions, and get direct guidance from the world's best PMs — specific frameworks, verbatim quotes, conflicting perspectives, and concrete next steps.
 
-Powered by 303 transcripts from [Lenny's Podcast](https://www.lennysnewsletter.com/podcast) — interviews with PMs from Stripe, Airbnb, Figma, Calendly, Confluent, and more.
+Powered by 303 transcripts from [Lenny's Podcast](https://www.lennysnewsletter.com/podcast) — interviews with PMs from Stripe, Airbnb, Figma, Spotify, Notion, Slack, Duolingo, Calendly, Linear, Canva, and 200+ more.
 
 ## Install
 
@@ -21,6 +21,8 @@ Run it when you are stuck on a decision, working through a blocker, or want to p
 
 The skill runs a short adaptive wizard (up to 4 questions) to understand your challenge, then searches the transcript archive for what the best PMs have actually said about your situation. It surfaces frameworks, direct quotes, and where smart people disagree — then applies all of it to your specific context.
 
+Each insight in the output leads with a bold summary sentence so you can scan the briefing before reading in full. Progress updates during the search show which PM and company is being read.
+
 ## What you get
 
 - **The situation** — your challenge restated with your exact context
@@ -36,7 +38,7 @@ No external dependencies. The skill uses the transcript archive hosted at [ChatP
 
 ## Version
 
-`1.1.0`
+`1.2.0`
 
 ## Credits
 
