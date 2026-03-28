@@ -10,7 +10,7 @@
     {
       "name": "product-sense",
       "description": "Surfaces patterns, frameworks, and thinking from top product leaders via Lenny's Podcast transcripts — tailored to your current work.",
-      "version": "0.1.0",
+      "version": "1.0.0",
       "author": {
         "name": "Hugo Hodinka",
         "url": "https://github.com/Code-Hugo"
