@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "product-sense",
-  "description": "Develops product sense through structured analysis of Lenny's Podcast transcripts.",
+  "description": "Product sense coach: describe your challenge, get direct guidance from 303 Lenny's Podcast transcripts.",
   "owner": {
     "name": "Hugo Hodinka",
     "url": "https://github.com/Code-Hugo"
@@ -9,8 +9,8 @@
   "plugins": [
     {
       "name": "product-sense",
-      "description": "Surfaces patterns, frameworks, and thinking from top product leaders via Lenny's Podcast transcripts — tailored to your current work.",
-      "version": "1.0.0",
+      "description": "Get direct PM guidance on your real product challenges. Searches 303 Lenny's Podcast transcripts to surface relevant frameworks, quotes, and actionable next steps — tailored to your situation.",
+      "version": "1.1.0",
       "author": {
         "name": "Hugo Hodinka",
         "url": "https://github.com/Code-Hugo"

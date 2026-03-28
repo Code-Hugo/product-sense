@@ -1,7 +1,7 @@
 {
   "name": "product-sense",
-  "version": "1.0.0",
-  "description": "Develops product sense through structured analysis of Lenny's Podcast transcripts.",
+  "version": "1.1.0",
+  "description": "Get direct PM guidance on your real product challenges. Searches 303 Lenny's Podcast transcripts to surface relevant frameworks, quotes, and actionable next steps — tailored to your situation.",
   "author": {
     "name": "Hugo Hodinka",
     "url": "https://github.com/Code-Hugo"
