@@ -1,6 +1,6 @@
 ---
 name: product-sense
-version: "1.2.0"
+version: "1.3.0"
 description: "A product sense coach powered by 303 Lenny's Podcast transcripts. Describe a real product challenge, answer a few short questions, and get direct guidance from the world's best PMs — specific frameworks, verbatim quotes, conflicting perspectives, and concrete next steps. Built to help you make better product decisions and develop sharper instincts over time."
 user-invocable: true
 argument-hint: 'product-sense, product-sense [one-line description of your challenge]'
@@ -28,14 +28,40 @@ PMs and founders from Stripe, Airbnb, Figma, Spotify, Notion, Slack, Duolingo, C
 
 Run silently before doing anything else:
 ```bash
-git -C ~/Developer/PA/references/lennys-podcast-transcripts pull --quiet 2>/dev/null || true
+git -C ~/.claude/lennys-podcast-transcripts pull --quiet 2>/dev/null || true
 ```
 Do not show this to the user. If the archive directory does not exist, stop and output:
-> The transcript archive is not present. Run: `cd ~/Developer/PA/references && git clone https://github.com/ChatPRD/lennys-podcast-transcripts.git`
+> The transcript archive is not present. Run: `git clone https://github.com/ChatPRD/lennys-podcast-transcripts.git ~/.claude/lennys-podcast-transcripts`
 
 ---
 
 ## Step 2 — Adaptive wizard
+
+### 2a — CLAUDE.md consent check (run silently before any questions)
+
+```bash
+mkdir -p ~/.claude/skill-configs
+cat ~/.claude/skill-configs/product-sense.json 2>/dev/null || echo "{}"
+```
+
+**Three cases based on the result:**
+
+**Case A — No config file (first run only):**
+Before asking Q1, ask this one-time question:
+> "Quick one-time setup: I can read your CLAUDE.md to automatically pick up your role, company, and context — and use it to inform the company context question each time, so you don't have to repeat yourself. Want me to enable this? (You'll only be asked once.)"
+
+- If **yes**: run `echo '{"claude_md_access":true}' > ~/.claude/skill-configs/product-sense.json`, then read `~/.claude/CLAUDE.md` silently. Respond: "Got it — I'll use your CLAUDE.md from now on." Proceed to Q1, then follow Case B behaviour for Q3.
+- If **no**: run `echo '{"claude_md_access":false}' > ~/.claude/skill-configs/product-sense.json`. Respond: "No problem — I'll ask each time." Proceed to Q1 and run the full wizard.
+
+**Case B — `claude_md_access: true`:**
+Read `~/.claude/CLAUDE.md` silently before asking any questions. Attempt to extract: role, company, industry, B2B/B2C, and any relevant project stage. Proceed with Q1, Q2, then ask Q3 pre-framed (see updated Q3 wording below). Q3 is never skipped — CLAUDE.md context makes it faster and more targeted, not absent.
+
+If `~/.claude/CLAUDE.md` does not exist, or exists but contains no extractable role/company/stage context (e.g. the user has a minimal or non-PM CLAUDE.md), fall back silently to standard Q3 wording. Do not surface an error or mention CLAUDE.md to the user in this case.
+
+**Case C — `claude_md_access: false`:**
+Run the full wizard as-is. Do not mention CLAUDE.md.
+
+---
 
 You need four pieces of information before searching. Treat them as a checklist, not a script. After each answer, evaluate what you now know and adapt before asking the next question.
 
@@ -52,6 +78,7 @@ You need four pieces of information before searching. Treat them as a checklist,
 - **Collapse Q3/Q4 if Q2 was already rich.** If the user pasted a PRD, gave detailed metrics, or explained stage and context in their detail answer, don't ask for it again. Confirm: "You've given me a lot to work with — anything else before I dig in?" and proceed.
 - **Ask Q4 lightly if Q2 was thorough.** Instead of the full prompt, just: "Anything else I should know?"
 - **Prioritise output quality over question count.** If two thorough answers tell you everything, start the research. If a vague answer leaves you guessing, push for more before searching.
+- **Use CLAUDE.md context for Q3 if consent is granted.** If `claude_md_access` is `true`, pre-frame Q3 with the extracted context rather than asking it cold. The user should confirm, add to, or override it — not repeat themselves from scratch.
 
 **Default question wording** (adapt based on what's already been said — never ask something you already know):
 
@@ -61,8 +88,11 @@ You need four pieces of information before searching. Treat them as a checklist,
 **Q2**
 "Tell me more. What do you already know? What have you tried? What's making it hard?"
 
-**Q3** *(skip or confirm if evident from Q1/Q2)*
+**Q3 — standard** *(used when `claude_md_access` is false or absent)*
 "What stage is your company at, and is this B2B or B2C?"
+
+**Q3 — CLAUDE.md-informed** *(used when `claude_md_access` is true)*
+"I have your CLAUDE.md context: [extracted role, company, industry, B2B/B2C, stage — e.g. "Lead PM at Perk, B2B travel tech, scale-up"]. Should I use that as the context for this challenge, or is there anything you want to add or override for this one?"
 
 **Q4** *(lighten if Q2 was detailed)*
 "Anything else worth knowing — data, docs, constraints? Skip if not."
@@ -96,7 +126,7 @@ Progress line examples — choose the one that fits what you're about to do:
 
 Extract 3–5 topic keywords from the wizard answers. List available index files:
 ```bash
-ls ~/Developer/PA/references/lennys-podcast-transcripts/index/
+ls ~/.claude/lennys-podcast-transcripts/index/
 ```
 Read matching index files to get candidate episode lists. The index gives volume — not depth.
 
@@ -104,13 +134,13 @@ Read matching index files to get candidate episode lists. The index gives volume
 
 For each candidate episode, grep for the user's key terms to find the exact lines where the topic is discussed:
 ```bash
-grep -n -i "KEYWORD" ~/Developer/PA/references/lennys-podcast-transcripts/episodes/GUEST_FOLDER/transcript.md
+grep -n -i "KEYWORD" ~/.claude/lennys-podcast-transcripts/episodes/GUEST_FOLDER/transcript.md
 ```
 Use the returned line numbers with `Read` (offset + limit, 20–40 lines around the match) to pull precise excerpts. Never read a full transcript — they are 25,000+ tokens each. Always read frontmatter first (lines 1–30), then grep for line numbers, then read only those sections.
 
 Broad grep across all episodes for terms not covered by the index:
 ```bash
-grep -r -l "KEYWORD" ~/Developer/PA/references/lennys-podcast-transcripts/episodes/ --include="*.md" | head -15
+grep -r -l "KEYWORD" ~/.claude/lennys-podcast-transcripts/episodes/ --include="*.md" | head -15
 ```
 
 ### Episode selection
@@ -190,7 +220,7 @@ Apply everything directly to the user's situation. Use the exact numbers, stage,
 
 ## Archive location
 
-`~/Developer/PA/references/lennys-podcast-transcripts/`
+`~/.claude/lennys-podcast-transcripts/`
 
 - `episodes/` — 303 episode folders, each with `transcript.md`
 - `index/` — 88 pre-built topic files linking episodes by keyword

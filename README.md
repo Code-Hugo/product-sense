@@ -38,7 +38,7 @@ No external dependencies. The skill uses the transcript archive hosted at [ChatP
 
 ## Version
 
-`1.2.0`
+`1.3.0`
 
 ## Credits
 
