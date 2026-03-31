@@ -1,6 +1,6 @@
 ---
 name: product-sense
-version: "1.3.0"
+version: "1.4.0"
 description: "A product sense coach powered by 303 Lenny's Podcast transcripts. Describe a real product challenge, answer a few short questions, and get direct guidance from the world's best PMs — specific frameworks, verbatim quotes, conflicting perspectives, and concrete next steps. Built to help you make better product decisions and develop sharper instincts over time."
 user-invocable: true
 argument-hint: 'product-sense, product-sense [one-line description of your challenge]'
@@ -37,7 +37,7 @@ Do not show this to the user. If the archive directory does not exist, stop and 
 
 ## Step 2 — Adaptive wizard
 
-### 2a — CLAUDE.md consent check (run silently before any questions)
+### 2a — CLAUDE.md context check (run silently before any questions)
 
 ```bash
 mkdir -p ~/.claude/skill-configs
@@ -47,11 +47,12 @@ cat ~/.claude/skill-configs/product-sense.json 2>/dev/null || echo "{}"
 **Three cases based on the result:**
 
 **Case A — No config file (first run only):**
-Before asking Q1, ask this one-time question:
-> "Quick one-time setup: I can read your CLAUDE.md to automatically pick up your role, company, and context — and use it to inform the company context question each time, so you don't have to repeat yourself. Want me to enable this? (You'll only be asked once.)"
+Proceed directly to Q1 and Q2. No setup question. Before asking Q3, silently read `~/.claude/CLAUDE.md` and attempt to extract: role, company, industry, B2B/B2C, and any relevant project stage.
 
-- If **yes**: run `echo '{"claude_md_access":true}' > ~/.claude/skill-configs/product-sense.json`, then read `~/.claude/CLAUDE.md` silently. Respond: "Got it — I'll use your CLAUDE.md from now on." Proceed to Q1, then follow Case B behaviour for Q3.
-- If **no**: run `echo '{"claude_md_access":false}' > ~/.claude/skill-configs/product-sense.json`. Respond: "No problem — I'll ask each time." Proceed to Q1 and run the full wizard.
+- If context is found: use the CLAUDE.md-informed Q3 wording (see below). After the user confirms or overrides the context, save `{"claude_md_access":true}` to `~/.claude/skill-configs/product-sense.json`.
+- If `~/.claude/CLAUDE.md` does not exist, or exists but contains no extractable role/company/stage context: use standard Q3 wording and save `{"claude_md_access":false}`.
+
+In either case, do not mention CLAUDE.md or the config file to the user on first run — the disclosure happens naturally through Q3.
 
 **Case B — `claude_md_access: true`:**
 Read `~/.claude/CLAUDE.md` silently before asking any questions. Attempt to extract: role, company, industry, B2B/B2C, and any relevant project stage. Proceed with Q1, Q2, then ask Q3 pre-framed (see updated Q3 wording below). Q3 is never skipped — CLAUDE.md context makes it faster and more targeted, not absent.
@@ -110,7 +111,7 @@ Searching the archive...
 ```
 
 Progress line examples — choose the one that fits what you're about to do:
-- `Scanning 88 topic areas for your challenge...`
+- `Scanning the archive for [keyword]...`
 - `Checking what the index says about [keyword]...`
 - `Found [N] candidate episodes — going deeper...`
 - `Reading what [Guest Name] ([Company]) said about this...`
@@ -122,41 +123,50 @@ Progress line examples — choose the one that fits what you're about to do:
 
 **Company lookup:** When you read a transcript's frontmatter, extract the guest's company or role from the `description` or `title` field (e.g. "Co-President at Spotify", "CPO at Wise"). Use it in all progress lines for that guest. If you cannot determine the company, use their title or role instead. Never leave the company field blank if it can be inferred.
 
-### Layer 1: Index matching
+### Layer 1: Grep for passages (primary)
 
-Extract 3–5 topic keywords from the wizard answers. List available index files:
-```bash
-ls ~/.claude/lennys-podcast-transcripts/index/
-```
-Read matching index files to get candidate episode lists. The index gives volume — not depth.
+Extract 3–5 specific keywords from the wizard answers. Start by grepping directly across all episodes — this finds exact matches and is more targeted than the index:
 
-### Layer 2: Grep for passages
-
-For each candidate episode, grep for the user's key terms to find the exact lines where the topic is discussed:
-```bash
-grep -n -i "KEYWORD" ~/.claude/lennys-podcast-transcripts/episodes/GUEST_FOLDER/transcript.md
-```
-Use the returned line numbers with `Read` (offset + limit, 20–40 lines around the match) to pull precise excerpts. Never read a full transcript — they are 25,000+ tokens each. Always read frontmatter first (lines 1–30), then grep for line numbers, then read only those sections.
-
-Broad grep across all episodes for terms not covered by the index:
 ```bash
 grep -r -l "KEYWORD" ~/.claude/lennys-podcast-transcripts/episodes/ --include="*.md" | head -15
 ```
 
+Run this for each keyword. For each matching episode, read the frontmatter first (lines 1–30), then grep for line numbers, then read only those sections:
+
+```bash
+grep -n -i "KEYWORD" ~/.claude/lennys-podcast-transcripts/episodes/GUEST_FOLDER/transcript.md
+```
+
+Use the returned line numbers with `Read` (offset + limit, 20–40 lines around the match) to pull precise excerpts. Never read a full transcript — they are 25,000+ tokens each.
+
+### Layer 2: Index for topic coverage (supplementary)
+
+After grepping, check the index to catch relevant episodes that may not use the exact keywords:
+
+```bash
+ls ~/.claude/lennys-podcast-transcripts/index/
+```
+
+Read matching index files and cross-reference against what grep already found. Add any new candidates not yet covered. The index gives breadth; grep gives precision.
+
 ### Episode selection
 
-Select 4–6 episodes to draw from. Prioritise:
+Select 4–8 episodes to draw from. Go wider (6–8) if the wizard surfaces multiple distinct sub-questions or the challenge spans more than one domain. Prioritise:
 1. Direct relevance to the specific challenge
 2. Match on company stage and B2B/B2C context from Q3
 3. View count (`view_count` in frontmatter) — higher signals resonance
 4. Guests who appear multiple times in the archive (check for `-20`, `-30` folder suffixes)
 5. Recency (`publish_date`) for current context; older classics for timeless principles
 
+### Handling thin results
+
+If fewer than 2 episodes yield genuinely relevant passages after both layers, do not pad with loosely related content. Instead, broaden your keywords (try synonyms, adjacent concepts) and run one more grep pass. If results are still thin, surface this honestly at the top of the briefing: "The archive has limited direct coverage of this specific topic — I've drawn on the closest relevant episodes, but treat this as partial signal rather than full coverage."
+
 ---
 
 ## Step 4 — Look for disagreement
 
-After collecting relevant content, actively check whether the archive contains meaningfully different positions on the user's question. Two smart PMs disagreeing is more valuable than five agreeing. If you find genuine tension, surface it. If not, skip that section.
+After collecting relevant content, actively check whether the archive contains meaningfully different positions on the user's question. Two smart PMs disagreeing is more valuable than five agreeing. Include this section whenever you find genuine tension — and set the threshold low. Hard contradictions count, but so do softer tensions: different emphasis, different sequencing, different conditions under which the same principle applies. If two guests would give the user materially different advice, that is worth surfacing even if neither is "wrong." Only skip this section if there is truly no variation in perspective across the episodes you read.
 
 ---
 
@@ -206,14 +216,14 @@ Apply everything directly to the user's situation. Use the exact numbers, stage,
 ---
 
 ### Three things to do next
-1. [First action. Specific, ordered. "Do X because Y" — not "consider X".]
+1. [First action. Order by leverage — put the action that unlocks or informs the others first. "Do X because Y" — not "consider X".]
 2. [Second action.]
 3. [Third action.]
 
 ---
 
 ### One question to sit with
-[A single sharp question the archive raises about this specific situation. The kind a great PM mentor leaves you with — not answered, just worth holding.]
+[A single sharp question that surfaces a tension or assumption the user has not directly named. It should shift the frame on the problem — not restate it. The kind a great PM mentor leaves you with because it makes you see the situation differently, not because it summarises what you already said.]
 ```
 
 ---

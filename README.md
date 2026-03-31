@@ -19,7 +19,7 @@ npx skills add code-hugo/product-sense
 
 Run it when you are stuck on a decision, working through a blocker, or want to pressure-test your thinking before committing to a direction.
 
-The skill runs a short adaptive wizard (up to 4 questions) to understand your challenge, then searches the transcript archive for what the best PMs have actually said about your situation. It surfaces frameworks, direct quotes, and where smart people disagree — then applies all of it to your specific context.
+The skill runs a short adaptive wizard (up to 4 questions) to understand your challenge. If you have a `~/.claude/CLAUDE.md` with role and company context, the skill picks it up automatically at the relevant question — no upfront setup required. It then searches the transcript archive for what the best PMs have actually said about your situation, leading with targeted keyword search before falling back to the topic index for broader coverage.
 
 Each insight in the output leads with a bold summary sentence so you can scan the briefing before reading in full. Progress updates during the search show which PM and company is being read.
 
@@ -27,10 +27,10 @@ Each insight in the output leads with a bold summary sentence so you can scan th
 
 - **The situation** — your challenge restated with your exact context
 - **What the best PMs say** — 3-5 insights with verbatim quotes and timestamps
-- **Where they disagree** — genuine tension in the archive, attributed and explained
+- **Where they disagree** — tensions in the archive, including differences in emphasis and approach (not just hard contradictions)
 - **What this means for your situation** — concrete synthesis, not a summary
-- **Three things to do next** — specific, ordered, actionable
-- **One question to sit with** — the kind a great PM mentor leaves you with
+- **Three things to do next** — ordered by leverage, not just sequence
+- **One question to sit with** — surfaces an assumption or tension you haven't named yet
 
 ## Requirements
 
@@ -38,7 +38,7 @@ No external dependencies. The skill uses the transcript archive hosted at [ChatP
 
 ## Version
 
-`1.3.0`
+`1.4.0`
 
 ## Credits
 
